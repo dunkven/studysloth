@@ -371,7 +371,7 @@ async function fetchPrayerTimes(city, country) {
   throw new Error(`No prayer times found for "${city}". Please select a different city.`);
 }
 
-// ─── AI SCHEDULING ─────────────────────────────────────────────────────────
+// ─── AI SCHEDULING (Groq - Llama 3.3 70B — free) ───────────────────────────
 async function generateScheduleAI(userPrefs, prayerTimes) {
   const { subjects, burnout, sessionLength, studyGoal, busyTimes } = userPrefs;
   const prompt = `You are an expert study scheduler for Muslim students. Generate a 3-day study schedule (Monday, Tuesday, Wednesday) that adapts around these prayer times (24h format): ${JSON.stringify(prayerTimes)}.
@@ -390,7 +390,7 @@ Rules:
 - Keep sessions at the preferred length
 - Schedule light review after Isha, heavy study in the morning
 
-Respond ONLY with valid JSON in this exact format:
+Respond ONLY with valid JSON in this exact format, no extra text, no markdown:
 {
   "days": [
     {
@@ -406,18 +406,25 @@ Respond ONLY with valid JSON in this exact format:
   "tips": ["tip1", "tip2", "tip3"]
 }`;
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+  const response = await fetch("/api/schedule", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+    },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
+      model: "llama-3.3-70b-versatile",
+      max_tokens: 2000,
+      temperature: 0.7,
       messages: [{ role: "user", content: prompt }],
     }),
   });
-  if (!response.ok) throw new Error("AI scheduling failed");
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error?.message || "AI scheduling failed — check your Groq API key");
+  }
   const data = await response.json();
-  const text = data.content.map(i => i.text || "").join("");
+  const text = data.choices?.[0]?.message?.content || "";
   const clean = text.replace(/```json|```/g, "").trim();
   return JSON.parse(clean);
 }
@@ -910,27 +917,59 @@ function StudyTimer({ schedule, completedBlocks, onToggleBlock }) {
   );
 }
 
+// ─── LOCALSTORAGE HELPERS ────────────────────────────────────────────────────
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+function save(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
+function clearAll() {
+  ["ss_location","ss_subjects","ss_prefs","ss_busy","ss_prayerTimes","ss_schedule","ss_completed","ss_tab"].forEach(k => localStorage.removeItem(k));
+}
+
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 const STEPS = ["Location", "Subjects", "Preferences", "Busy Times"];
 
 export default function App() {
-  const [tab, setTab] = useState("home");
+  const [tab, setTab] = useState(() => load("ss_tab", "home"));
   const [step, setStep] = useState(0);
-  const [location, setLocation] = useState({ city: "", country: "", countryKey: "" });
-  const [subjects, setSubjects] = useState({ subjects: [] });
-  const [prefs, setPrefs] = useState({ burnout: "Sometimes", sessionLength: "45", studyGoal: "3" });
-  const [busy, setBusy] = useState({ busyTimes: [] });
-  const [prayerTimes, setPrayerTimes] = useState(null);
-  const [schedule, setSchedule] = useState(null);
+  const [location, setLocation] = useState(() => load("ss_location", { city: "", country: "", countryKey: "" }));
+  const [subjects, setSubjects] = useState(() => load("ss_subjects", { subjects: [] }));
+  const [prefs, setPrefs] = useState(() => load("ss_prefs", { burnout: "Sometimes", sessionLength: "45", studyGoal: "3" }));
+  const [busy, setBusy] = useState(() => load("ss_busy", { busyTimes: [] }));
+  const [prayerTimes, setPrayerTimes] = useState(() => load("ss_prayerTimes", null));
+  const [schedule, setSchedule] = useState(() => load("ss_schedule", null));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [completedBlocks, setCompletedBlocks] = useState({});
+  const [completedBlocks, setCompletedBlocks] = useState(() => load("ss_completed", {}));
+  const [showReset, setShowReset] = useState(false);
+
+  // Persist everything whenever it changes
+  useEffect(() => { save("ss_tab", tab); }, [tab]);
+  useEffect(() => { save("ss_location", location); }, [location]);
+  useEffect(() => { save("ss_subjects", subjects); }, [subjects]);
+  useEffect(() => { save("ss_prefs", prefs); }, [prefs]);
+  useEffect(() => { save("ss_busy", busy); }, [busy]);
+  useEffect(() => { save("ss_prayerTimes", prayerTimes); }, [prayerTimes]);
+  useEffect(() => { save("ss_schedule", schedule); }, [schedule]);
+  useEffect(() => { save("ss_completed", completedBlocks); }, [completedBlocks]);
 
   const toggleBlock = key => setCompletedBlocks(prev => ({ ...prev, [key]: !prev[key] }));
 
+  const handleReset = () => {
+    clearAll();
+    setTab("home"); setStep(0);
+    setLocation({ city: "", country: "", countryKey: "" });
+    setSubjects({ subjects: [] });
+    setPrefs({ burnout: "Sometimes", sessionLength: "45", studyGoal: "3" });
+    setBusy({ busyTimes: [] });
+    setPrayerTimes(null); setSchedule(null); setCompletedBlocks({});
+    setShowReset(false);
+  };
+
   const handleNextStep = async () => {
     if (step < STEPS.length - 1) { setStep(s => s + 1); return; }
-    // Final step — fetch prayer times then generate schedule
     setLoading(true);
     setError("");
     try {
@@ -953,6 +992,8 @@ export default function App() {
     return true;
   };
 
+  const hasExistingSchedule = !!schedule;
+
   return (
     <>
       <style>{STYLES}</style>
@@ -969,10 +1010,44 @@ export default function App() {
                 {{ home: "Home", setup: "Setup", timetable: "Schedule", timer: "Timer" }[t]}
               </button>
             ))}
+            {hasExistingSchedule && (
+              <button className="nav-tab" style={{ color: "var(--error)", fontSize: "0.78rem" }}
+                onClick={() => setShowReset(true)}>↺ Reset</button>
+            )}
           </div>
         </nav>
 
-        {tab === "home" && <Landing onStart={() => { setTab("setup"); setStep(0); }} />}
+        {/* RESET CONFIRM MODAL */}
+        {showReset && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ background: "var(--cream)", borderRadius: 20, padding: 32, maxWidth: 360, width: "90%", textAlign: "center", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+              <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🗑️</div>
+              <h3 style={{ fontFamily: "'Playfair Display',serif", marginBottom: 8 }}>Start fresh?</h3>
+              <p style={{ color: "var(--muted)", fontSize: "0.88rem", marginBottom: 24 }}>This will delete your saved schedule and all preferences.</p>
+              <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                <button className="btn-secondary btn-sm" onClick={() => setShowReset(false)}>Cancel</button>
+                <button className="btn-primary btn-sm" style={{ background: "var(--error)" }} onClick={handleReset}>Yes, reset</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "home" && (
+          <div className="page fade-in">
+            {hasExistingSchedule && (
+              <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 32px 0" }}>
+                <div style={{ background: "rgba(92,122,94,0.1)", border: "1px solid rgba(92,122,94,0.25)", borderRadius: 14, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--sage)" }}>👋 Welcome back!</div>
+                    <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>Your schedule for {location.city} is saved and ready.</div>
+                  </div>
+                  <button className="btn-primary btn-sm" onClick={() => setTab("timetable")}>View Schedule →</button>
+                </div>
+              </div>
+            )}
+            <Landing onStart={() => { setTab("setup"); setStep(0); }} />
+          </div>
+        )}
 
         {tab === "setup" && (
           <div className="page wizard">
