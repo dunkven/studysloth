@@ -368,22 +368,30 @@ const PRAYER_TIMES_DB = {
   "Luxor":        { Fajr:"04:22", Dhuhr:"11:55", Asr:"15:21", Maghrib:"18:14", Isha:"19:40" },
 };
 
-// ─── PRAYER TIMES — tries live API, falls back to hardcoded data ─────────────
+// ─── PRAYER TIMES — live API first, hardcoded as fallback ───────────────────
 async function fetchPrayerTimes(city, country) {
-  // 1. Try hardcoded data first (works in sandboxed/artifact environments)
-  const hardcoded = PRAYER_TIMES_DB[city];
-  if (hardcoded) return hardcoded;
-
-  // 2. Fall back to live API (works when running locally)
+  // 1. Always try the live Aladhan API first — gives accurate times for today's date
   try {
     const url = `https://api.aladhan.com/v1/timingsByCity?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&method=2`;
     const res = await fetch(url);
     const data = await res.json();
     if (data.code === 200 && data.data?.timings) {
       const t = data.data.timings;
-      return { Fajr: t.Fajr, Dhuhr: t.Dhuhr, Asr: t.Asr, Maghrib: t.Maghrib, Isha: t.Isha };
+      // Strip seconds e.g. "18:15 (BST)" → "18:15"
+      const clean = s => s?.split(" ")[0]?.slice(0, 5) || s;
+      return {
+        Fajr:    clean(t.Fajr),
+        Dhuhr:   clean(t.Dhuhr),
+        Asr:     clean(t.Asr),
+        Maghrib: clean(t.Maghrib),
+        Isha:    clean(t.Isha),
+      };
     }
   } catch (_) {}
+
+  // 2. Fall back to hardcoded approximate times (used in sandboxed preview only)
+  const hardcoded = PRAYER_TIMES_DB[city];
+  if (hardcoded) return hardcoded;
 
   throw new Error(`No prayer times found for "${city}". Please select a different city.`);
 }
