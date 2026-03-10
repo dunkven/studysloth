@@ -29,9 +29,6 @@ const STYLES = `
   body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--charcoal); min-height: 100vh; }
 
   .app { min-height: 100vh; position: relative; overflow-x: hidden; }
-  
-  /* FULL WIDTH WRAPPER — constrains content on ultrawide screens */
-  .page-inner { max-width: 1200px; margin: 0 auto; width: 100%; padding: 0 24px; }
 
   /* GEOMETRIC BG */
   .geo-bg {
@@ -53,10 +50,11 @@ const STYLES = `
   /* NAV */
   .nav {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 32px; background: rgba(250,246,239,0.88);
+    padding: 18px 48px; background: rgba(250,246,239,0.88);
     backdrop-filter: blur(12px); border-bottom: 1px solid rgba(92,122,94,0.12);
     position: sticky; top: 0; z-index: 100;
   }
+  .nav-inner { max-width: 1400px; margin: 0 auto; width: 100%; display: flex; align-items: center; justify-content: space-between; }
   .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--sage); font-weight: 700; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
   .nav-logo span { font-size: 1.6rem; }
   .nav-tabs { display: flex; gap: 4px; }
@@ -65,12 +63,13 @@ const STYLES = `
   .nav-tab.active { background: var(--sage); color: white; }
 
   /* LANDING */
-  .hero { padding: 80px 32px 60px; text-align: center; max-width: 780px; margin: 0 auto; }
+  .landing-wrap { max-width: 1400px; margin: 0 auto; padding: 0 48px; }
+  .hero { padding: 100px 0 60px; text-align: center; max-width: 860px; margin: 0 auto; }
   .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(200,150,62,0.12); border: 1px solid rgba(200,150,62,0.3); color: var(--gold); padding: 6px 16px; border-radius: 20px; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.05em; margin-bottom: 28px; text-transform: uppercase; }
-  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.4rem, 6vw, 4rem); line-height: 1.15; color: var(--charcoal); margin-bottom: 20px; font-weight: 700; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.6rem, 5vw, 5rem); line-height: 1.1; color: var(--charcoal); margin-bottom: 20px; font-weight: 700; }
   .hero h1 em { color: var(--sage); font-style: normal; }
-  .hero p { font-size: 1.1rem; color: var(--muted); line-height: 1.7; margin-bottom: 40px; font-weight: 300; }
-  .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .hero p { font-size: 1.15rem; color: var(--muted); line-height: 1.7; margin-bottom: 40px; font-weight: 300; max-width: 600px; margin-left: auto; margin-right: auto; }
+  .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 0; }
   .btn-primary { padding: 14px 32px; background: var(--sage); color: white; border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em; }
   .btn-primary:hover { background: #4a6a4c; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(92,122,94,0.3); }
   .btn-secondary { padding: 14px 32px; background: transparent; color: var(--sage); border: 1.5px solid var(--sage); border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
@@ -79,7 +78,9 @@ const STYLES = `
   .btn-gold:hover { background: #b5822f; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,150,62,0.3); }
   .btn-sm { padding: 9px 20px; font-size: 0.83rem; border-radius: 9px; }
 
-  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; padding: 0 32px 80px; max-width: 1100px; margin: 0 auto; }
+  .features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding: 60px 0 80px; max-width: 1400px; margin: 0 auto; }
+  @media(max-width:1100px){ .features { grid-template-columns: repeat(2,1fr); } }
+  @media(max-width:600px){ .features { grid-template-columns: 1fr; } }
   .feature-card { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: 18px; padding: 28px 24px; border: 1px solid rgba(92,122,94,0.10); box-shadow: var(--shadow); transition: transform 0.2s; }
   .feature-card:hover { transform: translateY(-3px); }
   .feature-icon { font-size: 2rem; margin-bottom: 14px; }
@@ -87,7 +88,8 @@ const STYLES = `
   .feature-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
 
   /* SETUP WIZARD */
-  .wizard { max-width: 780px; margin: 0 auto; padding: 48px 24px; }
+  .wizard { max-width: 860px; margin: 0 auto; padding: 48px 48px; }
+  @media(max-width:900px){ .wizard { padding: 32px 24px; } }
   .wizard-header { margin-bottom: 40px; }
   .wizard-header h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--charcoal); margin-bottom: 8px; }
   .wizard-header p { color: var(--muted); font-size: 0.92rem; }
@@ -134,31 +136,34 @@ const STYLES = `
   .prayer-pill.next { background: rgba(200,150,62,0.5); font-weight: 600; }
 
   /* TIMETABLE */
-  .timetable-page { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
-  .timetable-page h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 6px; }
+  .timetable-page { max-width: 1300px; margin: 0 auto; padding: 40px 48px; }
+  .timetable-page h2 { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-bottom: 6px; }
   .timetable-page .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
+  @media(min-width:1100px){
+    .timetable-days { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
+    .day-header { margin-top: 0; }
+  }
 
-  .day-header { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--charcoal); margin: 28px 0 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(92,122,94,0.15); display: flex; align-items: center; gap: 10px; }
+  .day-header { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--charcoal); margin: 28px 0 14px; padding-bottom: 8px; border-bottom: 2px solid rgba(92,122,94,0.15); display: flex; align-items: center; gap: 10px; }
   .day-header span { font-size: 0.75rem; font-family: 'DM Sans', sans-serif; background: rgba(92,122,94,0.1); color: var(--sage); padding: 3px 10px; border-radius: 10px; font-weight: 500; }
 
-  .block { display: flex; align-items: stretch; gap: 14px; margin-bottom: 10px; }
-  .block-time { width: 80px; min-width: 80px; text-align: right; font-size: 0.78rem; color: var(--muted); padding-top: 14px; font-weight: 500; line-height: 1.3; }
-  .block-card { flex: 1; border-radius: 12px; padding: 14px 18px; border-left: 4px solid; transition: transform 0.15s; cursor: pointer; }
-  .block-card:hover { transform: translateX(3px); }
-  .block-card.study { background: rgba(92,122,94,0.08); border-color: var(--sage); }
-  .block-card.prayer { background: rgba(200,150,62,0.1); border-color: var(--gold); }
-  .block-card.break { background: rgba(139,175,141,0.1); border-color: var(--sage-lt); }
-  .block-card.busy { background: rgba(122,122,122,0.08); border-color: var(--muted); }
-  .block-card.done { opacity: 0.5; }
-  .block-title { font-weight: 500; font-size: 0.9rem; margin-bottom: 3px; display: flex; align-items: center; gap: 8px; }
-  .block-sub { font-size: 0.78rem; color: var(--muted); }
-  .block-check { width: 18px; height: 18px; border: 1.5px solid currentColor; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; margin-left: auto; cursor: pointer; flex-shrink: 0; }
+  .block { display: flex; align-items: stretch; gap: 12px; margin-bottom: 8px; }
+  .block-time { width: 72px; min-width: 72px; text-align: right; font-size: 0.75rem; color: var(--muted); padding-top: 13px; font-weight: 600; line-height: 1.3; }
+  .block-card { flex: 1; border-radius: 12px; padding: 12px 16px; border-left: 4px solid; transition: transform 0.15s, box-shadow 0.15s; cursor: pointer; }
+  .block-card:hover { transform: translateX(2px); box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+  .block-card.study  { background: #EAF0EA; border-color: var(--sage); }
+  .block-card.prayer { background: #FDF3E3; border-color: var(--gold); }
+  .block-card.break  { background: #EEF4EE; border-color: var(--sage-lt); }
+  .block-card.busy   { background: #F0F0F0; border-color: #AAAAAA; }
+  .block-card.done   { opacity: 0.45; }
+  .block-title { font-weight: 600; font-size: 0.88rem; margin-bottom: 2px; display: flex; align-items: center; gap: 7px; color: var(--charcoal); }
+  .block-sub { font-size: 0.76rem; color: var(--muted); margin-bottom: 4px; }
+  .block-check { width: 18px; height: 18px; border: 1.5px solid rgba(92,122,94,0.4); border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; margin-left: auto; cursor: pointer; flex-shrink: 0; background: white; }
   .block-check.checked { background: var(--sage); border-color: var(--sage); color: white; }
-
-  .type-badge { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.65; font-weight: 600; }
+  .type-badge { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; opacity: 0.55; }
 
   /* STUDY TIMER */
-  .timer-page { max-width: 560px; margin: 0 auto; padding: 48px 24px; text-align: center; }
+  .timer-page { max-width: 680px; margin: 0 auto; padding: 48px 48px; text-align: center; }
   .timer-page h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 6px; }
   .timer-page .sub { color: var(--muted); margin-bottom: 40px; font-size: 0.9rem; }
   .timer-display { font-family: 'Playfair Display', serif; font-size: clamp(4rem, 18vw, 7rem); color: var(--charcoal); line-height: 1; margin-bottom: 10px; letter-spacing: -2px; font-weight: 700; transition: color 0.3s; }
@@ -223,12 +228,15 @@ const STYLES = `
   @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
 
   @media(max-width:600px){
-    .nav{padding:14px 16px;} .nav-tabs{display:none;}
-    .hero{padding:50px 16px 40px;} .features{padding:0 16px 50px;}
-    .wizard{padding:32px 16px;} .form-card{padding:22px 16px;}
-    .busy-time-row{grid-template-columns:1fr 1fr; grid-template-rows: auto auto;}
-    .timetable-page,.timer-page{padding:28px 16px;}
-    .location-row{grid-template-columns:1fr;}
+    .nav{ padding:14px 16px; } .nav-tabs{ display:none; }
+    .landing-wrap{ padding: 0 16px; }
+    .hero{ padding:50px 0 40px; }
+    .wizard{ padding:32px 16px; } .form-card{ padding:22px 16px; }
+    .busy-time-row{ grid-template-columns:1fr 1fr; grid-template-rows: auto auto; }
+    .timetable-page{ padding:28px 16px; }
+    .timer-page{ padding:28px 16px; }
+    .location-row{ grid-template-columns:1fr; }
+    .features{ padding: 40px 0 50px; }
   }
 `;
 
@@ -479,28 +487,30 @@ function PrayerBanner({ prayerTimes }) {
 function Landing({ onStart }) {
   return (
     <div className="page fade-in">
-      <div className="hero">
-        <div className="hero-badge">☪️ Prayer-Aware Scheduling</div>
-        <h1>Study smarter,<br /><em>worship better</em></h1>
-        <p>Sloth Study builds your personalised AI study schedule around your local prayer times — so you never have to choose between faith and education.</p>
-        <div className="hero-cta">
-          <button className="btn-primary" onClick={onStart}>Build My Schedule →</button>
-          <button className="btn-secondary">See Example</button>
-        </div>
-      </div>
-      <div className="features">
-        {[
-          { icon: "🕌", title: "Prayer-Aware", desc: "Auto-fetches your local Adhan times and builds breaks around each prayer." },
-          { icon: "🤖", title: "AI Scheduling", desc: "Claude AI crafts a bespoke timetable based on your subjects, burnout risk, and preferences." },
-          { icon: "⏱️", title: "Study Timer", desc: "Session timer with Pomodoro-style breaks and one-tap session completion." },
-          { icon: "📚", title: "Multi-Subject", desc: "Juggle multiple subjects with smart alternation to maximise retention." },
-        ].map(f => (
-          <div key={f.title} className="feature-card">
-            <div className="feature-icon">{f.icon}</div>
-            <h3>{f.title}</h3>
-            <p>{f.desc}</p>
+      <div className="landing-wrap">
+        <div className="hero">
+          <div className="hero-badge">☪️ Prayer-Aware Scheduling</div>
+          <h1>Study smarter,<br /><em>worship better</em></h1>
+          <p>Sloth Study builds your personalised AI study schedule around your local prayer times — so you never have to choose between faith and education.</p>
+          <div className="hero-cta">
+            <button className="btn-primary" onClick={onStart}>Build My Schedule →</button>
+            <button className="btn-secondary">See Example</button>
           </div>
-        ))}
+        </div>
+        <div className="features">
+          {[
+            { icon: "🕌", title: "Prayer-Aware", desc: "Auto-fetches your local Adhan times and builds breaks around each prayer." },
+            { icon: "🤖", title: "AI Scheduling", desc: "Llama AI crafts a bespoke timetable based on your subjects, burnout risk, and preferences." },
+            { icon: "⏱️", title: "Study Timer", desc: "Session timer with Pomodoro-style breaks and one-tap session completion." },
+            { icon: "📚", title: "Multi-Subject", desc: "Juggle multiple subjects with smart alternation to maximise retention." },
+          ].map(f => (
+            <div key={f.title} className="feature-card">
+              <div className="feature-icon">{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -798,6 +808,7 @@ function TimetableView({ schedule, prayerTimes, onStartTimer, completedBlocks, o
           {schedule.tips.map((tip, i) => <div key={i} style={{ fontSize: "0.83rem", color: "var(--charcoal)", marginBottom: 5 }}>• {tip}</div>)}
         </div>
       )}
+      <div className="timetable-days">
       {schedule.days.map(day => (
         <div key={day.name}>
           <div className="day-header">{day.name} <span>{day.blocks.filter(b => b.type === "study").length} study blocks</span></div>
@@ -826,19 +837,32 @@ function TimetableView({ schedule, prayerTimes, onStartTimer, completedBlocks, o
           })}
         </div>
       ))}
+      </div>
     </div>
   );
 }
 
 // ─── STUDY TIMER ─────────────────────────────────────────────────────────────
+const STUDY_PRESETS = [
+  { label: "25 min", secs: 1500, isBreak: false },
+  { label: "45 min", secs: 2700, isBreak: false },
+  { label: "60 min", secs: 3600, isBreak: false },
+  { label: "90 min", secs: 5400, isBreak: false },
+];
+const BREAK_PRESETS = [
+  { label: "5 min", secs: 300, isBreak: true },
+  { label: "10 min", secs: 600, isBreak: true },
+  { label: "15 min", secs: 900, isBreak: true },
+];
+
 function StudyTimer({ schedule, completedBlocks, onToggleBlock }) {
-  const [mode, setMode] = useState("study"); // study | break
+  const [mode, setMode] = useState("study");
   const [duration, setDuration] = useState(25 * 60);
   const [remaining, setRemaining] = useState(25 * 60);
   const [running, setRunning] = useState(false);
   const [activeSession, setActiveSession] = useState(null);
+  const [showTimer, setShowTimer] = useState(true);
   const intervalRef = useRef(null);
-  const PRESETS = [{ label: "25 min", secs: 1500 }, { label: "45 min", secs: 2700 }, { label: "60 min", secs: 3600 }, { label: "5 min break", secs: 300, isBreak: true }];
 
   const start = () => { setRunning(true); };
   const pause = () => { setRunning(false); };
@@ -868,34 +892,64 @@ function StudyTimer({ schedule, completedBlocks, onToggleBlock }) {
 
   return (
     <div className="timer-page fade-in">
-      <h2>Study Timer ⏱️</h2>
-      <p className="sub">Stay focused. Your schedule adapts around your prayers.</p>
-      <div className="session-picker">
-        {PRESETS.map(p => (
-          <button key={p.label} className={`session-pill${duration === p.secs ? " active" : ""}`} onClick={() => setPreset(p)}>{p.label}</button>
-        ))}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <h2 style={{ margin: 0 }}>Study Timer ⏱️</h2>
+        <button
+          onClick={() => setShowTimer(t => !t)}
+          style={{ background: showTimer ? "rgba(92,122,94,0.1)" : "var(--sage)", color: showTimer ? "var(--sage)" : "white", border: "1.5px solid var(--sage)", borderRadius: 20, padding: "7px 18px", fontSize: "0.82rem", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", fontWeight: 500, transition: "all 0.2s" }}
+        >
+          {showTimer ? "⏹ Hide Timer" : "▶ Show Timer"}
+        </button>
       </div>
-      <div className="timer-circle-bg">
-        <svg className="timer-svg" viewBox="0 0 260 260">
-          <circle className="timer-track" cx="130" cy="130" r="118" />
-          <circle className={`timer-prog${mode === "break" ? " break-mode" : ""}`} cx="130" cy="130" r="118"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference * (1 - progress)} />
-        </svg>
-        <div>
-          <div className={`timer-display${running ? " running" : ""}${mode === "break" ? " break-mode" : ""}`}>
-            {formatTime(remaining)}
-          </div>
-          <div className="timer-label">{mode === "break" ? "☕ Break Time" : activeSession ? activeSession.subject : "Study Session"}</div>
+      <p className="sub">Stay focused. Your schedule adapts around your prayers.</p>
+
+      {/* PRESET PICKERS */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontSize: "0.75rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600, marginBottom: 8 }}>📖 Study</div>
+        <div className="session-picker" style={{ marginBottom: 16 }}>
+          {STUDY_PRESETS.map(p => (
+            <button key={p.label} className={`session-pill${duration === p.secs && mode === "study" ? " active" : ""}`} onClick={() => setPreset(p)}>{p.label}</button>
+          ))}
+        </div>
+        <div style={{ fontSize: "0.75rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600, marginBottom: 8 }}>☕ Break</div>
+        <div className="session-picker" style={{ marginBottom: 0 }}>
+          {BREAK_PRESETS.map(p => (
+            <button key={p.label}
+              className={`session-pill${duration === p.secs && mode === "break" ? " active" : ""}`}
+              style={mode === "break" && duration === p.secs ? { background: "var(--gold)", borderColor: "var(--gold)", color: "white" } : { borderColor: "rgba(200,150,62,0.3)", color: "var(--gold)" }}
+              onClick={() => setPreset(p)}>{p.label}
+            </button>
+          ))}
         </div>
       </div>
-      <div className="timer-controls">
-        {!running
-          ? <button className="btn-primary" onClick={start}>{remaining === duration ? "▶ Start" : "▶ Resume"}</button>
-          : <button className="btn-secondary" onClick={pause}>⏸ Pause</button>
-        }
-        <button className="btn-secondary" onClick={reset}>↺ Reset</button>
-      </div>
+
+      {/* TIMER CIRCLE — toggleable */}
+      {showTimer && (
+        <>
+          <div className="timer-circle-bg">
+            <svg className="timer-svg" viewBox="0 0 260 260">
+              <circle className="timer-track" cx="130" cy="130" r="118" />
+              <circle className={`timer-prog${mode === "break" ? " break-mode" : ""}`} cx="130" cy="130" r="118"
+                strokeDasharray={circumference}
+                strokeDashoffset={circumference * (1 - progress)} />
+            </svg>
+            <div>
+              <div className={`timer-display${running ? " running" : ""}${mode === "break" ? " break-mode" : ""}`}>
+                {formatTime(remaining)}
+              </div>
+              <div className="timer-label">{mode === "break" ? "☕ Break Time" : activeSession ? activeSession.subject : "Study Session"}</div>
+            </div>
+          </div>
+          <div className="timer-controls">
+            {!running
+              ? <button className="btn-primary" onClick={start}>{remaining === duration ? "▶ Start" : "▶ Resume"}</button>
+              : <button className="btn-secondary" onClick={pause}>⏸ Pause</button>
+            }
+            <button className="btn-secondary" onClick={reset}>↺ Reset</button>
+          </div>
+        </>
+      )}
+
       {todaySessions.length > 0 && (
         <div className="today-sessions">
           <h4>Today's Sessions — Monday</h4>
@@ -903,7 +957,7 @@ function StudyTimer({ schedule, completedBlocks, onToggleBlock }) {
             const key = `Monday-${i}`;
             const done = completedBlocks[key];
             return (
-              <div key={key} className="session-item" onClick={() => { setActiveSession(s); if (s.type === "study") { setPreset({ secs: s.duration * 60 }); } }}>
+              <div key={key} className="session-item" onClick={() => { setActiveSession(s); if (s.type === "study") { setPreset({ secs: s.duration * 60, isBreak: false }); } }}>
                 <div className={`session-dot${done ? " done" : s.type === "prayer" ? " prayer" : ""}`} />
                 <div className="session-info">
                   <div className="session-name">{s.subject}</div>
@@ -1006,20 +1060,22 @@ export default function App() {
       <div className="app">
         <div className="geo-bg" />
         <nav className="nav">
-          <div className="nav-logo" onClick={() => setTab("home")}>
-            <span>🦥</span> Sloth Study
-          </div>
-          <div className="nav-tabs">
-            {["home", "setup", "timetable", "timer"].map(t => (
-              <button key={t} className={`nav-tab${tab === t ? " active" : ""}`}
-                onClick={() => { if (t === "setup") setStep(0); setTab(t); }}>
-                {{ home: "Home", setup: "Setup", timetable: "Schedule", timer: "Timer" }[t]}
-              </button>
-            ))}
-            {hasExistingSchedule && (
-              <button className="nav-tab" style={{ color: "var(--error)", fontSize: "0.78rem" }}
-                onClick={() => setShowReset(true)}>↺ Reset</button>
-            )}
+          <div className="nav-inner">
+            <div className="nav-logo" onClick={() => setTab("home")}>
+              <span>🦥</span> Sloth Study
+            </div>
+            <div className="nav-tabs">
+              {["home", "setup", "timetable", "timer"].map(t => (
+                <button key={t} className={`nav-tab${tab === t ? " active" : ""}`}
+                  onClick={() => { if (t === "setup") setStep(0); setTab(t); }}>
+                  {{ home: "Home", setup: "Setup", timetable: "Schedule", timer: "Timer" }[t]}
+                </button>
+              ))}
+              {hasExistingSchedule && (
+                <button className="nav-tab" style={{ color: "var(--error)", fontSize: "0.78rem" }}
+                  onClick={() => setShowReset(true)}>↺ Reset</button>
+              )}
+            </div>
           </div>
         </nav>
 
@@ -1041,7 +1097,7 @@ export default function App() {
         {tab === "home" && (
           <div className="page fade-in">
             {hasExistingSchedule && (
-              <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 32px 0" }}>
+              <div style={{ maxWidth: 1400, margin: "0 auto", padding: "24px 48px 0" }}>
                 <div style={{ background: "rgba(92,122,94,0.1)", border: "1px solid rgba(92,122,94,0.25)", borderRadius: 14, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--sage)" }}>👋 Welcome back!</div>
