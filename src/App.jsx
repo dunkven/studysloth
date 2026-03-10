@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
+// ─── CONFIG — API calls go through /api/schedule serverless function ─────────
+// This keeps your Groq key secret on the server. Set GROQ_API_KEY in Vercel env vars.
+const API_ENDPOINT = typeof window !== "undefined" && window.location.hostname !== "localhost"
+  ? "/api/schedule"
+  : "https://api.groq.com/openai/v1/chat/completions";
+
 // ─── STYLES ────────────────────────────────────────────────────────────────
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap');
@@ -23,6 +29,9 @@ const STYLES = `
   body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--charcoal); min-height: 100vh; }
 
   .app { min-height: 100vh; position: relative; overflow-x: hidden; }
+  
+  /* FULL WIDTH WRAPPER — constrains content on ultrawide screens */
+  .page-inner { max-width: 1200px; margin: 0 auto; width: 100%; padding: 0 24px; }
 
   /* GEOMETRIC BG */
   .geo-bg {
@@ -56,7 +65,7 @@ const STYLES = `
   .nav-tab.active { background: var(--sage); color: white; }
 
   /* LANDING */
-  .hero { padding: 80px 32px 60px; text-align: center; max-width: 720px; margin: 0 auto; }
+  .hero { padding: 80px 32px 60px; text-align: center; max-width: 780px; margin: 0 auto; }
   .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(200,150,62,0.12); border: 1px solid rgba(200,150,62,0.3); color: var(--gold); padding: 6px 16px; border-radius: 20px; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.05em; margin-bottom: 28px; text-transform: uppercase; }
   .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.4rem, 6vw, 4rem); line-height: 1.15; color: var(--charcoal); margin-bottom: 20px; font-weight: 700; }
   .hero h1 em { color: var(--sage); font-style: normal; }
@@ -70,7 +79,7 @@ const STYLES = `
   .btn-gold:hover { background: #b5822f; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,150,62,0.3); }
   .btn-sm { padding: 9px 20px; font-size: 0.83rem; border-radius: 9px; }
 
-  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; padding: 0 32px 80px; max-width: 900px; margin: 0 auto; }
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; padding: 0 32px 80px; max-width: 1100px; margin: 0 auto; }
   .feature-card { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: 18px; padding: 28px 24px; border: 1px solid rgba(92,122,94,0.10); box-shadow: var(--shadow); transition: transform 0.2s; }
   .feature-card:hover { transform: translateY(-3px); }
   .feature-icon { font-size: 2rem; margin-bottom: 14px; }
@@ -78,7 +87,7 @@ const STYLES = `
   .feature-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
 
   /* SETUP WIZARD */
-  .wizard { max-width: 680px; margin: 0 auto; padding: 48px 24px; }
+  .wizard { max-width: 780px; margin: 0 auto; padding: 48px 24px; }
   .wizard-header { margin-bottom: 40px; }
   .wizard-header h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--charcoal); margin-bottom: 8px; }
   .wizard-header p { color: var(--muted); font-size: 0.92rem; }
@@ -125,7 +134,7 @@ const STYLES = `
   .prayer-pill.next { background: rgba(200,150,62,0.5); font-weight: 600; }
 
   /* TIMETABLE */
-  .timetable-page { max-width: 860px; margin: 0 auto; padding: 40px 24px; }
+  .timetable-page { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
   .timetable-page h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 6px; }
   .timetable-page .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
 
@@ -408,10 +417,7 @@ Respond ONLY with valid JSON in this exact format, no extra text, no markdown:
 
   const response = await fetch("/api/schedule", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "llama-3.3-70b-versatile",
       max_tokens: 2000,
@@ -421,7 +427,7 @@ Respond ONLY with valid JSON in this exact format, no extra text, no markdown:
   });
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err?.error?.message || "AI scheduling failed — check your Groq API key");
+    throw new Error(err?.error?.message || "AI scheduling failed — check your Groq API key in Vercel env vars");
   }
   const data = await response.json();
   const text = data.choices?.[0]?.message?.content || "";
