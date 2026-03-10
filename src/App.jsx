@@ -136,7 +136,7 @@ const STYLES = `
   .prayer-pill.next { background: rgba(200,150,62,0.5); font-weight: 600; }
 
   /* TIMETABLE */
-  .timetable-page { max-width: 1300px; margin: 0 auto; padding: 40px 48px; }
+  .timetable-page { max-width: 1300px; margin: 0 auto; padding: 40px 48px; position: relative; z-index: 2; }
   .timetable-page h2 { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-bottom: 6px; }
   .timetable-page .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
   @media(min-width:1100px){
@@ -163,7 +163,7 @@ const STYLES = `
   .type-badge { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; opacity: 0.55; }
 
   /* STUDY TIMER */
-  .timer-page { max-width: 680px; margin: 0 auto; padding: 48px 48px; text-align: center; }
+  .timer-page { max-width: 680px; margin: 0 auto; padding: 48px 48px; text-align: center; position: relative; z-index: 2; }
   .timer-page h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 6px; }
   .timer-page .sub { color: var(--muted); margin-bottom: 40px; font-size: 0.9rem; }
   .timer-display { font-family: 'Playfair Display', serif; font-size: clamp(4rem, 18vw, 7rem); color: var(--charcoal); line-height: 1; margin-bottom: 10px; letter-spacing: -2px; font-weight: 700; transition: color 0.3s; }
@@ -1054,9 +1054,19 @@ export default function App() {
 
   const hasExistingSchedule = !!schedule;
 
+  // Inject styles once into <head> — avoids flicker from re-rendering <style> tag
+  useEffect(() => {
+    const el = document.createElement("style");
+    el.id = "sloth-study-styles";
+    el.textContent = STYLES;
+    if (!document.getElementById("sloth-study-styles")) {
+      document.head.appendChild(el);
+    }
+    return () => {}; // leave styles in head even on unmount
+  }, []);
+
   return (
     <>
-      <style>{STYLES}</style>
       <div className="app">
         <div className="geo-bg" />
         <nav className="nav">
