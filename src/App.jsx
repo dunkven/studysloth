@@ -887,8 +887,12 @@ function StudyTimer({ schedule, completedBlocks, onToggleBlock }) {
   const progress = remaining / duration;
   const circumference = 2 * Math.PI * 118;
 
-  // Flatten today's sessions from schedule (Monday by default)
-  const todaySessions = schedule?.days?.[0]?.blocks || [];
+  // Use actual current day, fall back to Monday if not in schedule
+  const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const todayName = DAY_NAMES[new Date().getDay()];
+  const todaySchedule = schedule?.days?.find(d => d.name === todayName) || schedule?.days?.[0];
+  const todaySessions = todaySchedule?.blocks || [];
+  const displayDayName = todaySchedule?.name || "Today";
 
   return (
     <div className="timer-page fade-in">
@@ -952,9 +956,9 @@ function StudyTimer({ schedule, completedBlocks, onToggleBlock }) {
 
       {todaySessions.length > 0 && (
         <div className="today-sessions">
-          <h4>Today's Sessions — Monday</h4>
+          <h4>Today's Sessions — {displayDayName}</h4>
           {todaySessions.map((s, i) => {
-            const key = `Monday-${i}`;
+            const key = `${displayDayName}-${i}`;
             const done = completedBlocks[key];
             return (
               <div key={key} className="session-item" onClick={() => { setActiveSession(s); if (s.type === "study") { setPreset({ secs: s.duration * 60, isBreak: false }); } }}>
